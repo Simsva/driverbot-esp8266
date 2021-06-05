@@ -2,6 +2,7 @@
 #define MOTOR_DIR 2
 #define SERVO_PIN 14 // D5
 
+// Defines WIFI_SSID, WIFI_PASS and MQTT_SERVER
 #include "secret.h"
 
 #include <cstring>
