@@ -17,14 +17,18 @@ Servo servo;
 WiFiClient net;
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  if(strcmp(topic, "speed") == 0) {
-    int speed = atoi((char*)payload);
-    digitalWrite(MOTOR_DIR, speed < 0);
-    analogWrite(MOTOR_POW, abs(speed));
-  } else if(strcmp(topic, "direction") == 0) {
-    int direction = atoi((char*)payload);
-    servo.write(direction);
-  }
+  /*
+   * Payload structure
+   *  - 2 byte : Signed motor speed, int
+   *  - 1 byte : Unsigned servo rotation, int
+   */
+  int16_t speed = *(int16_t*)payload;
+  uint8_t direction = *(uint8_t*)(payload + sizeof(int16_t));
+
+  digitalWrite(MOTOR_DIR, speed < 0);
+  analogWrite(MOTOR_POW, abs(speed));
+
+  servo.write(direction);
 }
 
 PubSubClient client(MQTT_SERVER, 1883, callback, net);
@@ -44,13 +48,17 @@ void setup() {
   Serial.println();
   Serial.println(WiFi.localIP());
 
-  if(client.connect("driverbot")) {
-    Serial.println("Connected");
-    client.publish("hello", "Hello");
-    client.subscribe("speed");
-    client.subscribe("direction");
-  } else {
-    Serial.print("Ded");
+  while(!client.connected()) {
+    if(client.connect("driverbot")) {
+      Serial.println("Connected");
+
+      client.publish("hello", "Hello");
+      client.subscribe("data");
+    } else {
+      Serial.print("Failed to connect: ");
+      Serial.println(client.state());
+      delay(500);
+    }
   }
 
   servo.attach(SERVO_PIN);
