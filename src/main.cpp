@@ -5,9 +5,6 @@
 // Defines WIFI_SSID, WIFI_PASS and MQTT_SERVER
 #include "secret.h"
 
-#include <cstring>
-#include <cstdlib>
-
 #include <math.h>
 #include <Servo.h>
 #include <ESP8266WiFi.h>
